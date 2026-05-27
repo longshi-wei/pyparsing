@@ -42,7 +42,19 @@ def make_keyword(kwd_str, kwd_value):
 
 
 # set to False to return ParseResults
-RETURN_PYTHON_COLLECTIONS = True
+#
+# When RETURN_PYTHON_COLLECTIONS is True, jsonObject/jsonArray use
+# asdict=True/aslist=True and nested JSON collections are returned as native
+# dict/list values, including empty {} and []. When it is False, nested JSON
+# arrays and populated objects are returned as ParseResults objects. Empty
+# arrays still preserve the field as an empty ParseResults, so len() returns 0
+# and bool(value) is False because both the token list and token dict are
+# empty. Empty object members in the surrounding Dict-backed ParseResults are
+# exposed as empty strings, which are also falsey. Code that uses
+# ``if result.field:`` to test for field existence can therefore misread an
+# existing empty object/array as missing when RETURN_PYTHON_COLLECTIONS is
+# False.
+RETURN_PYTHON_COLLECTIONS = False
 
 TRUE = make_keyword("true", True)
 FALSE = make_keyword("false", False)
@@ -148,3 +160,22 @@ if __name__ == "__main__":
         testPrint(results.glossary.GlossDiv.GlossList.Acronym)
         testPrint(results.glossary.GlossDiv.GlossList.EvenPrimesGreaterThan2)
         testPrint(results.glossary.GlossDiv.GlossList.PrimesLessThan10)
+
+        empty_dict = results.glossary.GlossDiv.GlossList.EmptyDict
+        empty_list = results.glossary.GlossDiv.GlossList.EmptyList
+        print(
+            "EmptyDict:",
+            type(empty_dict),
+            "len=",
+            len(empty_dict),
+            "bool=",
+            bool(empty_dict),
+        )
+        print(
+            "EmptyList:",
+            type(empty_list),
+            "len=",
+            len(empty_list),
+            "bool=",
+            bool(empty_list),
+        )
