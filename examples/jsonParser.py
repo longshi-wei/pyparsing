@@ -42,6 +42,11 @@ def make_keyword(kwd_str, kwd_value):
 
 
 # set to False to return ParseResults
+# Note: When RETURN_PYTHON_COLLECTIONS is False, empty objects `{}` and empty arrays `[]`
+# will be parsed as empty `ParseResults` objects. These empty ParseResults have a length
+# of 0 (len() == 0) and evaluate to False in a boolean context. This might lead to unexpected
+# behavior if users check for field existence using `if result.field:`, as an empty object/array
+# will be considered False, similar to a missing field.
 RETURN_PYTHON_COLLECTIONS = True
 
 TRUE = make_keyword("true", True)
@@ -148,3 +153,9 @@ if __name__ == "__main__":
         testPrint(results.glossary.GlossDiv.GlossList.Acronym)
         testPrint(results.glossary.GlossDiv.GlossList.EvenPrimesGreaterThan2)
         testPrint(results.glossary.GlossDiv.GlossList.PrimesLessThan10)
+
+        print("\n--- Empty Collections Validation (RETURN_PYTHON_COLLECTIONS = False) ---")
+        empty_dict = results.glossary.GlossDiv.GlossList.EmptyDict
+        empty_list = results.glossary.GlossDiv.GlossList.EmptyList
+        print("EmptyDict: type={}, len={}, bool={}".format(type(empty_dict).__name__, len(empty_dict), bool(empty_dict)))
+        print("EmptyList: type={}, len={}, bool={}".format(type(empty_list).__name__, len(empty_list), bool(empty_list)))
