@@ -1,0 +1,44 @@
+diff --git a/examples/jsonParser.py b/examples/jsonParser.py
+index 066d661..61a8ee2 100644
+--- a/examples/jsonParser.py
++++ b/examples/jsonParser.py
+@@ -44,6 +44,20 @@ def make_keyword(kwd_str, kwd_value):
+ # set to False to return ParseResults
+ RETURN_PYTHON_COLLECTIONS = True
+ 
++# Note on empty objects and empty arrays behavior:
++#
++# When RETURN_PYTHON_COLLECTIONS = True:
++# - Empty JSON objects {} are returned as Python dicts with len() = 0 and bool() = False
++# - Empty JSON arrays [] are returned as Python lists with len() = 0 and bool() = False
++#
++# When RETURN_PYTHON_COLLECTIONS = False:
++# - Empty JSON objects {} are returned as ParseResults objects with len() = 0
++# - Empty JSON arrays [] are returned as ParseResults objects with len() = 0
++# - Both empty object and empty array ParseResults have bool() = False
++# - This can be confusing when using "if result.field:" to check field existence
++#   because both non-existent fields and empty fields will evaluate to False
++# - To check if a field actually exists, use "if 'field' in result:" instead
++
+ TRUE = make_keyword("true", True)
+ FALSE = make_keyword("false", False)
+ NULL = make_keyword("null", None)
+@@ -148,3 +162,18 @@ if __name__ == "__main__":
+         testPrint(results.glossary.GlossDiv.GlossList.Acronym)
+         testPrint(results.glossary.GlossDiv.GlossList.EvenPrimesGreaterThan2)
+         testPrint(results.glossary.GlossDiv.GlossList.PrimesLessThan10)
++        
++        # Verify empty dict and empty list behavior
++        print()
++        print("--- Empty Object and Empty Array Behavior Check ---")
++        empty_dict = results.glossary.GlossDiv.GlossList.EmptyDict
++        print(f"EmptyDict type: {type(empty_dict)}")
++        print(f"EmptyDict len(): {len(empty_dict)}")
++        print(f"EmptyDict bool(): {bool(empty_dict)}")
++        print()
++        empty_list = results.glossary.GlossDiv.GlossList.EmptyList
++        print(f"EmptyList type: {type(empty_list)}")
++        print(f"EmptyList len(): {len(empty_list)}")
++        print(f"EmptyList bool(): {bool(empty_list)}")
++        print()
++        print("Note: Use 'if \"EmptyDict\" in results.glossary.GlossDiv.GlossList:' to check field existence")
