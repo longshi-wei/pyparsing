@@ -1,0 +1,40 @@
+diff --git a/examples/jsonParser.py b/examples/jsonParser.py
+index 066d661..ea9cd3e 100644
+--- a/examples/jsonParser.py
++++ b/examples/jsonParser.py
+@@ -42,6 +42,16 @@ def make_keyword(kwd_str, kwd_value):
+ 
+ 
+ # set to False to return ParseResults
++# NOTE: When RETURN_PYTHON_COLLECTIONS = False, jsonObject and jsonArray return
++# ParseResults objects instead of native Python dict/list. This has an important
++# behavioral difference for empty collections:
++#   - Empty object {}  → empty ParseResults: len() == 0, bool() == False
++#   - Empty array []   → empty ParseResults: len() == 0, bool() == False
++# Since bool(empty_ParseResults) is False, code like "if result.EmptyField:"
++# may incorrectly treat an explicitly present-but-empty field as missing.
++# When RETURN_PYTHON_COLLECTIONS = True, empty dict/list are returned as native
++# Python {}, [] which also have bool() == False, but in that case the field
++# is accessible as a key in the dict — the falsiness is expected Python behavior.
+ RETURN_PYTHON_COLLECTIONS = True
+ 
+ TRUE = make_keyword("true", True)
+@@ -148,3 +158,18 @@ if __name__ == "__main__":
+         testPrint(results.glossary.GlossDiv.GlossList.Acronym)
+         testPrint(results.glossary.GlossDiv.GlossList.EvenPrimesGreaterThan2)
+         testPrint(results.glossary.GlossDiv.GlossList.PrimesLessThan10)
++
++        # Verify behavior of empty object and empty array in ParseResults mode.
++        # Empty ParseResults have len() == 0 and bool() == False, which may be
++        # surprising when checking for the presence of a field with "if result.field:".
++        print()
++        print("--- Empty collection behavior (RETURN_PYTHON_COLLECTIONS=False) ---")
++        empty_dict = results.glossary.GlossDiv.GlossList.EmptyDict
++        print("  EmptyDict:  type =", type(empty_dict).__name__,
++              ", len =", len(empty_dict),
++              ", bool =", bool(empty_dict))
++        empty_list = results.glossary.GlossDiv.GlossList.EmptyList
++        print("  EmptyList:  type =", type(empty_list).__name__,
++              ", len =", len(empty_list),
++              ", bool =", bool(empty_list))
++        print("  (Both are falsy — use 'is not None' or explicit key check instead of 'if field')")
