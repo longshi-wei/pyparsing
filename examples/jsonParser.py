@@ -42,6 +42,21 @@ def make_keyword(kwd_str, kwd_value):
 
 
 # set to False to return ParseResults
+#
+# NOTE: When RETURN_PYTHON_COLLECTIONS = False, empty JSON objects {} and
+# empty arrays [] are returned as empty ParseResults objects. While
+# len(empty_ParseResults) returns 0 (consistent with Python collections),
+# bool(empty_ParseResults) returns False because an empty ParseResults has
+# no tokens in its internal _toklist and _tokdict. This differs from the
+# behavior of Python's native {} and [], where bool({}) == False but
+# bool([]) == False as well — however, the key difference is that a user
+# might write `if result.field:` to check whether a field "exists", and
+# for a non-empty field this works, but for an empty object/array field
+# the condition evaluates to False, making it indistinguishable from a
+# truly missing field. In contrast, when RETURN_PYTHON_COLLECTIONS = True,
+# {} and [] are returned as Python dict/list, and their truthiness follows
+# standard Python semantics (both falsy when empty), but they can be
+# distinguished from missing keys via `'key' in result`.
 RETURN_PYTHON_COLLECTIONS = True
 
 TRUE = make_keyword("true", True)
@@ -148,3 +163,12 @@ if __name__ == "__main__":
         testPrint(results.glossary.GlossDiv.GlossList.Acronym)
         testPrint(results.glossary.GlossDiv.GlossList.EvenPrimesGreaterThan2)
         testPrint(results.glossary.GlossDiv.GlossList.PrimesLessThan10)
+
+        # Verify behavior of empty object {} and empty array [] as ParseResults
+        print("\n--- Empty object/array behavior (RETURN_PYTHON_COLLECTIONS=False) ---")
+        empty_dict = results.glossary.GlossDiv.GlossList.EmptyDict
+        empty_list = results.glossary.GlossDiv.GlossList.EmptyList
+        print(f"EmptyDict: type={type(empty_dict).__name__}, len={len(empty_dict)}, bool={bool(empty_dict)}")
+        print(f"EmptyList: type={type(empty_list).__name__}, len={len(empty_list)}, bool={bool(empty_list)}")
+        print(f"  -> Both len()==0 and bool()==False, so `if result.field:` cannot")
+        print( "     distinguish an empty {} or [] from a missing key.")
